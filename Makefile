@@ -12,7 +12,7 @@ RELEASE_DIR := ./release
 all: clean format test release
 
 clean:
-	rm -rf $(RELEASE_DIR) ./$(BASE)*
+	rm -rf $(RELEASE_DIR) ./$(NAME)*
 
 format:
 	go fmt ./...
