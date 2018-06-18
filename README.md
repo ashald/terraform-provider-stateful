@@ -111,11 +111,17 @@ resource "null_resource" "updates" {
 }
 ```
 
+### Download
+```bash
+$ wget "https://github.com/ashald/terraform-provider-stateful/releases/download/v1.0.0/terraform-provider-stateful_v1.0.0-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64"
+$ mv terraform-provider-stateful
+```
+
 ### Init
 ```bash
 $ ls -1
   main.tf
-  terraform-provider-stateful_v1.0.0
+  terraform-provider-stateful_v1.0.0-linux-amd64
 
 $ terraform init
 
