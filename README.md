@@ -65,6 +65,23 @@ The following attribute is exported:
 [null_resource](https://www.terraform.io/docs/providers/null/resource.html)'s `triggers` argument in order to invoke
 update actions. Currently SHA256 of the JSON representation of `desired` argument is used. 
 
+## Limitations
+
+### No meaningful diffs for `real` argument
+
+Due to limitations of Terraform API, there is no [feasible] way to display meaningful diffs for `real` attribute in case
+when object diverges from Terraform configuration. In order to reduce confusion and maintain uniform behavior `real`
+field's diffs are always rendered as:
+```
+real.%: "" => <computed>
+```
+
+### Destroy Provisioners
+
+Due to limitations in current implementation of destroy provisioners they are not executed when resource definition is
+removed from Terraform configuration. Instead `count` meta-parameter should be used. See
+[official documentation](See https://www.terraform.io/docs/provisioners/index.html#destroy-time-provisioners) for details.
+
 ## Usage
 
 ### main.tf
