@@ -42,6 +42,28 @@ Currently Terraform is able to automatically download only
 This means that the plugin should either be placed into current working directory where Terraform will be executed from
 or it can be [installed system-wide](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins).
 
+## Reference
+
+### Arguments
+
+The following arguments are supported:
+
+* `desired` - (Required) State that presumable will be enforced by `provisioner`s upon creation/update,
+serves as a trigger for updates. Used for fingerprinting via `hash` attribute (see below).
+* `real` - (Optional) An optional feedback about the "real" state of the object. When set, allows Terraform to detect
+situations when real state diverges from the desired one (for instance, an update outside of Terraform configuration).  
+
+All arguments must be of the same type and depend on the resource:
+* `string` for `stateful_string` 
+* `map[string,string]` for `stateful_map`
+
+### Attributes
+
+The following attribute is exported:
+
+* `hash` - The "fingerprint" of the `desired` state of the resource that can be used with
+[null_resource](https://www.terraform.io/docs/providers/null/resource.html)'s `triggers` argument in order to invoke
+update actions. Currently SHA256 of the JSON representation of `desired` argument is used. 
 
 ## Usage
 
@@ -349,29 +371,6 @@ $ terraform apply
   Apply complete! Resources: 0 added, 0 changed, 1 destroyed.
 
 ```
-
-## Reference
-
-### Arguments
-
-The following arguments are supported:
-
-* `desired` - (Required) State that presumable will be enforced by `provisioner`s upon creation/update,
-serves as a trigger for updates. Used for fingerprinting via `hash` attribute (see below).
-* `real` - (Optional) An optional feedback about the "real" state of the object. When set, allows Terraform to detect
-situations when real state diverges from the desired one (for instance, an update outside of Terraform configuration).  
-
-All arguments must be of the same type and depend on the resource:
-* `string` for `stateful_string` 
-* `map[string,string]` for `stateful_map`
-
-### Attributes
-
-The following attribute is exported:
-
-* `hash` - The "fingerprint" of the `desired` state of the resource that can be used with
-[null_resource](https://www.terraform.io/docs/providers/null/resource.html)'s `triggers` argument in order to invoke
-update actions. Currently SHA256 of the JSON representation of `desired` argument is used. 
 
 ## Development
 
