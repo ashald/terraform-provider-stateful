@@ -46,7 +46,7 @@ or it can be [installed system-wide](https://www.terraform.io/docs/configuration
 ## Usage
 
 ### main.tf
-```hcl-terraform
+```hcl
 locals { desired="desired.json" real="real.json" }
 
 data "external" "desired" { program=["cat", "${local.desired}"] }
