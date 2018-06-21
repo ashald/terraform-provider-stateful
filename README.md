@@ -459,3 +459,19 @@ $ make release
   GOOS=darwin GOARCH=amd64 go build -o './release/terraform-provider-stateful_v1.0.0-darwin-amd64'
   GOOS=linux GOARCH=amd64 go build -o './release/terraform-provider-stateful_v1.0.0-linux-amd64'
 ```
+
+### Versioning
+
+This project follow [Semantic Versioning](https://semver.org/)
+
+### Changelog
+
+This project follows [keep a changelog](https://keepachangelog.com/en/1.0.0/) guidelines for changelog.
+
+### Contributors
+
+Please see [CONTRIBUTORS.md](./CONTRIBUTORS.md)
+
+## License
+
+This is free and unencumbered software released into the public domain. See [LICENSE](./LICENSE)
