@@ -25,23 +25,6 @@ values being strings.
 
 All input arguments and output attributes are the same for all resources.
 
-## Installation
-
-> Terraform automatically discovers the Providers when it parses configuration files.
-> This only occurs when the init command is executed.
-
-Currently Terraform is able to automatically download only
-[official plugins distributed by HashiCorp](https://github.com/terraform-providers).
-
-[All other plugins](https://www.terraform.io/docs/providers/type/community-index.html) should be installed manually.
-
-> Terraform will search for matching Providers via a
-> [Discovery](https://www.terraform.io/docs/extend/how-terraform-works.html#discovery) process, **including the current
-> local directory**.
-
-This means that the plugin should either be placed into current working directory where Terraform will be executed from
-or it can be [installed system-wide](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins).
-
 ## Reference
 
 ### Arguments
@@ -81,6 +64,24 @@ real.%: "" => <computed>
 Due to limitations in current implementation of destroy provisioners they are not executed when resource definition is
 removed from Terraform configuration. Instead `count` meta-parameter should be used. See
 [official documentation](See https://www.terraform.io/docs/provisioners/index.html#destroy-time-provisioners) for details.
+
+
+## Installation
+
+> Terraform automatically discovers the Providers when it parses configuration files.
+> This only occurs when the init command is executed.
+
+Currently Terraform is able to automatically download only
+[official plugins distributed by HashiCorp](https://github.com/terraform-providers).
+
+[All other plugins](https://www.terraform.io/docs/providers/type/community-index.html) should be installed manually.
+
+> Terraform will search for matching Providers via a
+> [Discovery](https://www.terraform.io/docs/extend/how-terraform-works.html#discovery) process, **including the current
+> local directory**.
+
+This means that the plugin should either be placed into current working directory where Terraform will be executed from
+or it can be [installed system-wide](https://www.terraform.io/docs/configuration/providers.html#third-party-plugins).
 
 ## Usage
 
