@@ -115,7 +115,7 @@ resource "null_resource" "updates" {
 ### Download
 ```bash
 $ wget "https://github.com/ashald/terraform-provider-stateful/releases/download/v1.0.0/terraform-provider-stateful_v1.0.0-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64"
-$ mv terraform-provider-stateful
+$ chmod +x ./terraform-provider-stateful*
 ```
 
 ### Init
