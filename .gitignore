@@ -2,3 +2,9 @@
 release
 terraform-provider-stateful*
 .terraform/
+*.tfstate*
+terraform-provider-*
+*.yaml
+*.tf
+count
+*.json
