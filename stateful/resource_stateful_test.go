@@ -4,13 +4,21 @@ import (
 	"testing"
 
 	"fmt"
+
 	"github.com/hashicorp/terraform/helper/resource"
 	"github.com/hashicorp/terraform/terraform"
 )
 
 const template = `
-resource "stateful_string" "object" { desired="%s" real="%s" }
-resource "null_resource" "updates" { triggers { state="${stateful_string.object.hash}" } }
+resource "stateful_string" "object" {
+  desired="%s"
+	real="%s"
+}
+resource "null_resource" "updates" {
+  triggers={
+	  state="${stateful_string.object.hash}"
+	}
+}
 `
 
 func getConfig(desired string, real string) string {
