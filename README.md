@@ -87,29 +87,49 @@ or it can be [installed system-wide](https://www.terraform.io/docs/configuration
 
 ### main.tf
 ```hcl
-locals { desired="desired.json" real="real.json" }
+locals {
+  desired = "desired.json"
+  real    = "real.json"
+}
 
-data "external" "desired" { program=["cat", "${local.desired}"] }
-data "external" "real"    { program=["cat", "${local.real}"   ] }
+data "external" "desired" {
+  program = ["cat", local.desired]
+}
+
+data "external" "real" {
+  program = ["cat", local.real]
+}
 
 resource "stateful_map" "my_resource" {
   // The "count" meta-parameter is used to address destroy provisioner limitation
   // See https://www.terraform.io/docs/provisioners/index.html#destroy-time-provisioners for details
   // For the sake for usage example we read value from file, in real world set it explicitely
-  count = "${trimspace(file("count"))}"
-  
-  desired = "${data.external.desired.result}"
-  real    = "${data.external.real.result}"
+  count = trimspace(file("count"))
 
-  provisioner "local-exec" { command="echo '${jsonencode(stateful_map.my_resource.desired)}' > ${local.real}" }
-  provisioner "local-exec" { command="echo {} > ${local.real}" when="destroy"                                 }
+  desired = data.external.desired.result
+  real    = data.external.real.result
+
+  provisioner "local-exec" {
+    command = format("echo '%s' > %s", jsonencode(self.desired), local.real)
+  }
+  provisioner "local-exec" {
+    when    = destroy
+    command = format("echo {} > %s", local.real)
+  }
 }
 
 resource "null_resource" "updates" {
-  triggers { state = "${stateful_map.my_resource.hash}" }
+  count = trimspace(file("count"))
 
-  provisioner "local-exec" { command="echo '${jsonencode(stateful_map.my_resource.desired)}' > ${local.real}" }
+  triggers = {
+    state = stateful_map.my_resource[count.index].hash
+  }
+
+  provisioner "local-exec" {
+    command = format("echo '%s' > %s", jsonencode(stateful_map.my_resource[count.index].desired), local.real)
+  }
 }
+
 ```
 
 ### Download
@@ -125,30 +145,35 @@ $ ls -1
   terraform-provider-stateful_v1.0.0-linux-amd64
 
 $ terraform init
-
-Initializing provider plugins...
-
-The following providers do not have any version constraints in configuration,
-so the latest version was installed.
-
-To prevent automatic upgrades to new major versions that may contain breaking
-changes, it is recommended to add version = "..." constraints to the
-corresponding provider blocks in configuration, with the constraint strings
-suggested below.
-
-* provider.external: version = "~> 1.0"
-* provider.null: version = "~> 1.0"
-* provider.stateful: version = "~> 1.0"
-
-Terraform has been successfully initialized!
-
-You may now begin working with Terraform. Try running "terraform plan" to see
-any changes that are required for your infrastructure. All Terraform commands
-should now work.
-
-If you ever set or change modules or backend configuration for Terraform,
-rerun this command to reinitialize your working directory. If you forget, other
-commands will detect it and remind you to do so if necessary.
+  
+  Initializing the backend...
+  
+  Initializing provider plugins...
+  - Checking for available provider plugins...
+  - Downloading plugin for provider "external" (terraform-providers/external) 1.1.2...
+  - Downloading plugin for provider "null" (terraform-providers/null) 2.1.2...
+  
+  The following providers do not have any version constraints in configuration,
+  so the latest version was installed.
+  
+  To prevent automatic upgrades to new major versions that may contain breaking
+  changes, it is recommended to add version = "..." constraints to the
+  corresponding provider blocks in configuration, with the constraint strings
+  suggested below.
+  
+  * provider.external: version = "~> 1.1"
+  * provider.null: version = "~> 2.1"
+  * provider.stateful: version = "~> 1.0"
+  
+  Terraform has been successfully initialized!
+  
+  You may now begin working with Terraform. Try running "terraform plan" to see
+  any changes that are required for your infrastructure. All Terraform commands
+  should now work.
+  
+  If you ever set or change modules or backend configuration for Terraform,
+  rerun this command to reinitialize your working directory. If you forget, other
+  commands will detect it and remind you to do so if necessary.
 ```
 
 ### Create
@@ -166,8 +191,8 @@ $ echo 1 > count
  
 
 $ terraform apply
-  data.external.desired: Refreshing state...
   data.external.real: Refreshing state...
+  data.external.desired: Refreshing state...
   
   An execution plan has been generated and is shown below.
   Resource actions are indicated with the following symbols:
@@ -175,17 +200,21 @@ $ terraform apply
   
   Terraform will perform the following actions:
   
-    + null_resource.updates
-        id:          <computed>
-        triggers.%:  <computed>
+    # null_resource.updates[0] will be created
+    + resource "null_resource" "updates" {
+        + id       = (known after apply)
+        + triggers = (known after apply)
+      }
   
-    + stateful_map.my_resource
-        id:          <computed>
-        desired.%:   "1"
-        desired.foo: "bar"
-        hash:        <computed>
-        real.%:      <computed>
-  
+    # stateful_map.my_resource[0] will be created
+    + resource "stateful_map" "my_resource" {
+        + desired = {
+            + "foo" = "bar"
+          }
+        + hash    = (known after apply)
+        + id      = (known after apply)
+        + real    = (known after apply)
+      }
   
   Plan: 2 to add, 0 to change, 0 to destroy.
   
@@ -195,20 +224,14 @@ $ terraform apply
   
     Enter a value: yes
   
-  stateful_map.my_resource: Creating...
-    desired.%:   "0" => "1"
-    desired.foo: "" => "bar"
-    hash:        "" => "<computed>"
-    real.%:      "" => "<computed>"
-  stateful_map.my_resource: Provisioning with 'local-exec'...
-  stateful_map.my_resource (local-exec): Executing: ["/bin/sh" "-c" "echo {\"foo\":\"bar\"} > real.json"]
-  stateful_map.my_resource: Creation complete after 0s (ID: 40d0a5eb-1a7f-4c6b-a60b-6292baf5d1fd)
-  null_resource.updates: Creating...
-    triggers.%:     "" => "1"
-    triggers.state: "" => "7a38bf81f383f69433ad6e900d35b3e2385593f76a7b7ab5d4355b8ba41ee24b"
-  null_resource.updates: Provisioning with 'local-exec'...
-  null_resource.updates (local-exec): Executing: ["/bin/sh" "-c" "echo {\"foo\":\"bar\"} > real.json"]
-  null_resource.updates: Creation complete after 0s (ID: 6445584234947433393)
+  stateful_map.my_resource[0]: Creating...
+  stateful_map.my_resource[0]: Provisioning with 'local-exec'...
+  stateful_map.my_resource[0] (local-exec): Executing: ["/bin/sh" "-c" "echo '{\"foo\":\"bar\"}' > real.json"]
+  stateful_map.my_resource[0]: Creation complete after 0s [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  null_resource.updates[0]: Creating...
+  null_resource.updates[0]: Provisioning with 'local-exec'...
+  null_resource.updates[0] (local-exec): Executing: ["/bin/sh" "-c" "echo '{\"foo\":\"bar\"}' > real.json"]
+  null_resource.updates[0]: Creation complete after 0s [id=5046540171915034813]
   
   Apply complete! Resources: 2 added, 0 changed, 0 destroyed.
 
@@ -224,8 +247,8 @@ $ echo '{"foo":"baz"}' > desired.json
 $ terraform apply
   data.external.real: Refreshing state...
   data.external.desired: Refreshing state...
-  stateful_map.my_resource: Refreshing state... (ID: 9737bc60-31e6-4d66-b6cc-f12d6b37a29b)
-  null_resource.updates: Refreshing state... (ID: 3879522802033916949)
+  stateful_map.my_resource[0]: Refreshing state... [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  null_resource.updates[0]: Refreshing state... [id=5046540171915034813]
   
   An execution plan has been generated and is shown below.
   Resource actions are indicated with the following symbols:
@@ -234,16 +257,23 @@ $ terraform apply
   
   Terraform will perform the following actions:
   
-  -/+ null_resource.updates (new resource required)
-        id:             "3879522802033916949" => <computed> (forces new resource)
-        triggers.%:     "1" => <computed> (forces new resource)
-        triggers.state: "7a38bf81f383f69433ad6e900d35b3e2385593f76a7b7ab5d4355b8ba41ee24b" => "" (forces new resource)
+    # null_resource.updates[0] must be replaced
+  -/+ resource "null_resource" "updates" {
+        ~ id       = "5046540171915034813" -> (known after apply)
+        ~ triggers = {
+            - "state" = "7a38bf81f383f69433ad6e900d35b3e2385593f76a7b7ab5d4355b8ba41ee24b"
+          } -> (known after apply) # forces replacement
+      }
   
-    ~ stateful_map.my_resource
-        desired.foo:    "bar" => "baz"
-        hash:           "7a38bf81f383f69433ad6e900d35b3e2385593f76a7b7ab5d4355b8ba41ee24b" => <computed>
-        real.%:         "" => <computed>
-  
+    # stateful_map.my_resource[0] will be updated in-place
+    ~ resource "stateful_map" "my_resource" {
+        ~ desired = {
+            ~ "foo" = "bar" -> "baz"
+          }
+        ~ hash    = "7a38bf81f383f69433ad6e900d35b3e2385593f76a7b7ab5d4355b8ba41ee24b" -> (known after apply)
+          id      = "05f5e31d-6b5b-41e8-b15d-6a6774111598"
+        + real    = (known after apply)
+      }
   
   Plan: 1 to add, 1 to change, 1 to destroy.
   
@@ -253,19 +283,14 @@ $ terraform apply
   
     Enter a value: yes
   
-  null_resource.updates: Destroying... (ID: 3879522802033916949)
-  stateful_map.my_resource: Modifying... (ID: 9737bc60-31e6-4d66-b6cc-f12d6b37a29b)
-    desired.foo: "bar" => "baz"
-    hash:        "7a38bf81f383f69433ad6e900d35b3e2385593f76a7b7ab5d4355b8ba41ee24b" => "<computed>"
-    real.%:      "" => "<computed>"
-  null_resource.updates: Destruction complete after 0s
-  stateful_map.my_resource: Modifications complete after 0s (ID: 9737bc60-31e6-4d66-b6cc-f12d6b37a29b)
-  null_resource.updates: Creating...
-    triggers.%:     "" => "1"
-    triggers.state: "" => "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac"
-  null_resource.updates: Provisioning with 'local-exec'...
-  null_resource.updates (local-exec): Executing: ["/bin/sh" "-c" "echo '{\"foo\":\"baz\"}' > real.json"]
-  null_resource.updates: Creation complete after 0s (ID: 131549942545567523)
+  null_resource.updates[0]: Destroying... [id=5046540171915034813]
+  null_resource.updates[0]: Destruction complete after 0s
+  stateful_map.my_resource[0]: Modifying... [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  stateful_map.my_resource[0]: Modifications complete after 0s [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  null_resource.updates[0]: Creating...
+  null_resource.updates[0]: Provisioning with 'local-exec'...
+  null_resource.updates[0] (local-exec): Executing: ["/bin/sh" "-c" "echo '{\"foo\":\"baz\"}' > real.json"]
+  null_resource.updates[0]: Creation complete after 0s [id=1242536504768383134]
   
   Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
 
@@ -280,10 +305,10 @@ $ cat real.json
 $ echo '{"foo":"wrong"}' > real.json # diverge the real state
 
 $ terraform apply
-  data.external.real: Refreshing state...
   data.external.desired: Refreshing state...
-  stateful_map.my_resource: Refreshing state... (ID: 9737bc60-31e6-4d66-b6cc-f12d6b37a29b)
-  null_resource.updates: Refreshing state... (ID: 131549942545567523)
+  data.external.real: Refreshing state...
+  stateful_map.my_resource[0]: Refreshing state... [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  null_resource.updates[0]: Refreshing state... [id=1242536504768383134]
   
   An execution plan has been generated and is shown below.
   Resource actions are indicated with the following symbols:
@@ -292,15 +317,23 @@ $ terraform apply
   
   Terraform will perform the following actions:
   
-  -/+ null_resource.updates (new resource required)
-        id:             "131549942545567523" => <computed> (forces new resource)
-        triggers.%:     "1" => <computed> (forces new resource)
-        triggers.state: "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac" => "" (forces new resource)
+    # null_resource.updates[0] must be replaced
+  -/+ resource "null_resource" "updates" {
+        ~ id       = "1242536504768383134" -> (known after apply)
+        ~ triggers = {
+            - "state" = "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac"
+          } -> (known after apply) # forces replacement
+      }
   
-    ~ stateful_map.my_resource
-        hash:           "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac" => <computed>
-        real.%:         "" => <computed>
-  
+    # stateful_map.my_resource[0] will be updated in-place
+    ~ resource "stateful_map" "my_resource" {
+          desired = {
+              "foo" = "baz"
+          }
+        ~ hash    = "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac" -> (known after apply)
+          id      = "05f5e31d-6b5b-41e8-b15d-6a6774111598"
+        + real    = (known after apply)
+      }
   
   Plan: 1 to add, 1 to change, 1 to destroy.
   
@@ -310,18 +343,14 @@ $ terraform apply
   
     Enter a value: yes
   
-  null_resource.updates: Destroying... (ID: 131549942545567523)
-  null_resource.updates: Destruction complete after 0s
-  stateful_map.my_resource: Modifying... (ID: 9737bc60-31e6-4d66-b6cc-f12d6b37a29b)
-    hash:   "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac" => "<computed>"
-    real.%: "" => "<computed>"
-  stateful_map.my_resource: Modifications complete after 0s (ID: 9737bc60-31e6-4d66-b6cc-f12d6b37a29b)
-  null_resource.updates: Creating...
-    triggers.%:     "" => "1"
-    triggers.state: "" => "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac"
-  null_resource.updates: Provisioning with 'local-exec'...
-  null_resource.updates (local-exec): Executing: ["/bin/sh" "-c" "echo '{\"foo\":\"baz\"}' > real.json"]
-  null_resource.updates: Creation complete after 0s (ID: 5458577328069789046)
+  null_resource.updates[0]: Destroying... [id=1242536504768383134]
+  null_resource.updates[0]: Destruction complete after 0s
+  stateful_map.my_resource[0]: Modifying... [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  stateful_map.my_resource[0]: Modifications complete after 0s [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  null_resource.updates[0]: Creating...
+  null_resource.updates[0]: Provisioning with 'local-exec'...
+  null_resource.updates[0] (local-exec): Executing: ["/bin/sh" "-c" "echo '{\"foo\":\"baz\"}' > real.json"]
+  null_resource.updates[0]: Creation complete after 0s [id=835260447911403434]
   
   Apply complete! Resources: 1 added, 1 changed, 1 destroyed.
 
@@ -334,10 +363,10 @@ $ terraform apply
 $ echo 0 > count 
 
 $ terraform apply
-  data.external.real: Refreshing state...
   data.external.desired: Refreshing state...
-  stateful_map.my_resource: Refreshing state... (ID: 626d67ee-cf46-4f19-9cfe-1ec2e45fcafe)
-  null_resource.updates: Refreshing state... (ID: 3743826101948009555)
+  data.external.real: Refreshing state...
+  stateful_map.my_resource[0]: Refreshing state... [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  null_resource.updates[0]: Refreshing state... [id=835260447911403434]
   
   An execution plan has been generated and is shown below.
   Resource actions are indicated with the following symbols:
@@ -345,43 +374,24 @@ $ terraform apply
   
   Terraform will perform the following actions:
   
-    - stateful_map.my_resource
+    # null_resource.updates[0] will be destroyed
+    - resource "null_resource" "updates" {
+        - id       = "835260447911403434" -> null
+        - triggers = {
+            - "state" = "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac"
+          } -> null
+      }
   
+    # stateful_map.my_resource[0] will be destroyed
+    - resource "stateful_map" "my_resource" {
+        - desired = {
+            - "foo" = "baz"
+          } -> null
+        - hash    = "c450c726579d41e1daa46158c07c1ed4a81dddc5e8dcb96ad729bca95e0e6fac" -> null
+        - id      = "05f5e31d-6b5b-41e8-b15d-6a6774111598" -> null
+      }
   
-  Plan: 0 to add, 0 to change, 1 to destroy.
-  
-  Do you want to perform these actions?
-    Terraform will perform the actions described above.
-    Only 'yes' will be accepted to approve.
-  
-    Enter a value: yes
-  
-  stateful_map.my_resource: Destroying... (ID: 626d67ee-cf46-4f19-9cfe-1ec2e45fcafe)
-  stateful_map.my_resource: Provisioning with 'local-exec'...
-  stateful_map.my_resource (local-exec): Executing: ["/bin/sh" "-c" "echo {} > real.json"]
-  stateful_map.my_resource: Destruction complete after 0s
-  
-  Apply complete! Resources: 0 added, 0 changed, 1 destroyed.
-  
-  
-$ cat real.json
-  {}
-
-$ echo > main.tf
-
-$ terraform apply
-  null_resource.updates: Refreshing state... (ID: 3743826101948009555)
-  
-  An execution plan has been generated and is shown below.
-  Resource actions are indicated with the following symbols:
-    - destroy
-  
-  Terraform will perform the following actions:
-  
-    - null_resource.updates
-  
-  
-  Plan: 0 to add, 0 to change, 1 to destroy.
+  Plan: 0 to add, 0 to change, 2 to destroy.
   
   Do you want to perform these actions?
     Terraform will perform the actions described above.
@@ -389,10 +399,14 @@ $ terraform apply
   
     Enter a value: yes
   
-  null_resource.updates: Destroying... (ID: 3743826101948009555)
-  null_resource.updates: Destruction complete after 0s
+  null_resource.updates[0]: Destroying... [id=835260447911403434]
+  null_resource.updates[0]: Destruction complete after 0s
+  stateful_map.my_resource[0]: Destroying... [id=05f5e31d-6b5b-41e8-b15d-6a6774111598]
+  stateful_map.my_resource[0]: Provisioning with 'local-exec'...
+  stateful_map.my_resource[0] (local-exec): Executing: ["/bin/sh" "-c" "echo {} > real.json"]
+  stateful_map.my_resource[0]: Destruction complete after 0s
   
-  Apply complete! Resources: 0 added, 0 changed, 1 destroyed.
+  Apply complete! Resources: 0 added, 0 changed, 2 destroyed.
 
 ```
 

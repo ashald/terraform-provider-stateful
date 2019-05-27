@@ -64,7 +64,7 @@ func getStatefulResourceFingerprint(d *schema.ResourceData) string {
 }
 
 func createResource(d *schema.ResourceData, m interface{}) error {
-	d.SetId(uuid.Must(uuid.NewV4()).String())
+	d.SetId(uuid.NewV4().String())
 
 	sha256hash := getStatefulResourceFingerprint(d)
 	d.Set(FieldHash, sha256hash)

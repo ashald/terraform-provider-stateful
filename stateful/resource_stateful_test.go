@@ -11,12 +11,12 @@ import (
 
 const template = `
 resource "stateful_string" "object" {
-  desired="%s"
-	real="%s"
+  desired = "%s"
+  real    = "%s"
 }
 resource "null_resource" "updates" {
   triggers={
-	  state="${stateful_string.object.hash}"
+	  state = stateful_string.object.hash
 	}
 }
 `
