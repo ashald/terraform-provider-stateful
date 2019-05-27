@@ -134,7 +134,7 @@ resource "null_resource" "updates" {
 
 ### Download
 ```bash
-$ wget "https://github.com/ashald/terraform-provider-stateful/releases/download/v1.0.0/terraform-provider-stateful_v1.0.0-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64"
+$ wget "https://github.com/ashald/terraform-provider-stateful/releases/download/v1.1.0/terraform-provider-stateful_v1.1.0-$(uname -s | tr '[:upper:]' '[:lower:]')-amd64"
 $ chmod +x ./terraform-provider-stateful*
 ```
 
@@ -142,7 +142,7 @@ $ chmod +x ./terraform-provider-stateful*
 ```bash
 $ ls -1
   main.tf
-  terraform-provider-stateful_v1.0.0-linux-amd64
+  terraform-provider-stateful_v1.1.0-linux-amd64
 
 $ terraform init
   
@@ -442,7 +442,7 @@ $ go mod tidy
 
 ```bash
 $ make clean format test
-  rm -rf ./release terraform-provider-stateful_v1.0.0
+  rm -rf ./release terraform-provider-stateful_v1.1.0
   go fmt ./...
   go test -v ./...
   ?   	github.com/ashald/terraform-provider-stateful	[no test files]
@@ -459,7 +459,7 @@ $ make clean format test
 In order to build plugin for the current platform use [GNU]make:
 ```bash
 $ make build
-  go build -o terraform-provider-stateful_v1.0.0
+  go build -o terraform-provider-stateful_v1.1.0
 
 ```
 
@@ -473,8 +473,8 @@ executed against a configuration in the same directory.
 In order to prepare provider binaries for all platforms:
 ```bash
 $ make release
-  GOOS=darwin GOARCH=amd64 go build -o './release/terraform-provider-stateful_v1.0.0-darwin-amd64'
-  GOOS=linux GOARCH=amd64 go build -o './release/terraform-provider-stateful_v1.0.0-linux-amd64'
+  GOOS=darwin GOARCH=amd64 go build -o './release/terraform-provider-stateful_v1.1.0-darwin-amd64'
+  GOOS=linux GOARCH=amd64 go build -o './release/terraform-provider-stateful_v1.1.0-linux-amd64'
 ```
 
 ### Versioning
