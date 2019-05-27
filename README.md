@@ -63,7 +63,7 @@ real.%: "" => <computed>
 
 Due to limitations in current implementation of destroy provisioners they are not executed when resource definition is
 removed from Terraform configuration. Instead `count` meta-parameter should be used. See
-[official documentation](See https://www.terraform.io/docs/provisioners/index.html#destroy-time-provisioners) for details.
+[official documentation](https://www.terraform.io/docs/provisioners/index.html#destroy-time-provisioners) for details.
 
 
 ## Installation
@@ -398,27 +398,30 @@ $ terraform apply
 
 ## Development
 
-### Go
+## Go
 
-In order to work on the provider, [Go](http://www.golang.org) should be installed first (version 1.8+ is *required*).
+In order to work on the provider, [Go](http://www.golang.org) should be installed first (version 1.11+ is *required*).
 [goenv](https://github.com/syndbg/goenv) and [gvm](https://github.com/moovweb/gvm) are great utilities that can help a
 lot with that and simplify setup tremendously. 
-[GOPATH](http://golang.org/doc/code.html#GOPATH) should be setup correctly and as long as `$GOPATH/bin` should be
+[GOPATH](http://golang.org/doc/code.html#GOPATH) should be setup correctly and `$GOPATH/bin` should be
 added `$PATH`.
 
-### Source Code
+This plugin uses Go modules available starting from Go `1.11` and therefore it **should not** be checked out within `$GOPATH` tree.
 
-Source code can be retrieved either with `go get`
+## Source Code
 
+Source code can be retrieved with `git`
 ```bash
-$ go get -u -d github.com/ashald/terraform-provider-stateful
+$ git clone git@github.com:ashald/terraform-provider-stateful.git .
 ```
 
-or with `git`
+## Dependencies
+
+This project uses `go mod` to manage its dependencies and it's expected that all dependencies are vendored so that
+it's buildable without internet access. When adding/removing a dependency run following commands:
 ```bash
-$ mkdir -p ${GOPATH}/src/github.com/ashald/terraform-provider-stateful
-$ cd ${GOPATH}/src/github.com/ashald/terraform-provider-stateful
-$ git clone git@github.com:ashald/terraform-provider-stateful.git .
+$ go mod venndor
+$ go mod tidy
 ```
 
 ### Test

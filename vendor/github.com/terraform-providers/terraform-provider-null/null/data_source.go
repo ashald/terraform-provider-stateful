@@ -17,19 +17,19 @@ func dataSource() *schema.Resource {
 		Read: dataSourceRead,
 
 		Schema: map[string]*schema.Schema{
-			"inputs": {
+			"inputs": &schema.Schema{
 				Type:     schema.TypeMap,
 				Optional: true,
 			},
-			"outputs": {
+			"outputs": &schema.Schema{
 				Type:     schema.TypeMap,
 				Computed: true,
 			},
-			"random": {
+			"random": &schema.Schema{
 				Type:     schema.TypeString,
 				Computed: true,
 			},
-			"has_computed_default": {
+			"has_computed_default": &schema.Schema{
 				Type:     schema.TypeString,
 				Optional: true,
 				Computed: true,
