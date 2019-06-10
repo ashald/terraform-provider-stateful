@@ -1,6 +1,6 @@
 NAME := terraform-provider-stateful
 PLATFORMS := darwin/amd64 linux/amd64
-VERSION := $(shell git describe &>/dev/null && echo "_$$(git describe)")
+VERSION = $(shell git describe 1>/dev/null 2>/dev/null && echo "_$$(git describe)")
 
 temp = $(subst /, ,$@)
 os = $(word 1, $(temp))
