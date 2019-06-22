@@ -1,0 +1,18 @@
+v1.1.0:
+  darwin_amd64:
+    url: https://github.com/ashald/terraform-provider-stateful/releases/download/v1.1.0/terraform-provider-stateful_v1.1.0-darwin-amd64.zip
+    size: 27599364
+    digest: sha256:d773f5aec17078b2d57eddc5b0d61feaea6fe122ee1008a3ef3876286494ec68
+  linux_amd64:
+    url: https://github.com/ashald/terraform-provider-stateful/releases/download/v1.1.0/terraform-provider-stateful_v1.1.0-linux-amd64.zip
+    size: 27833249
+    digest: sha256:79a8b843079e97d31dfc6119365b1c0cc765f7a03ece873e5b971bb4361a82e6
+v1.0.0:
+  darwin_amd64:
+    url: https://github.com/ashald/terraform-provider-stateful/releases/download/v1.0.0/terraform-provider-stateful_v1.0.0-darwin-amd64.zip
+    size: 28276500
+    digest: sha256:9558ab0736d31506d731336968d10c6061b00ff394162eba772710133d077cf4
+  linux_amd64:
+    url: https://github.com/ashald/terraform-provider-stateful/releases/download/v1.0.0/terraform-provider-stateful_v1.0.0-linux-amd64.zip
+    size: 28389643
+    digest: sha256:1a7fe649f0f9b5a9f17a6914dd81b36256adba16008121db526480bff86d3c69
