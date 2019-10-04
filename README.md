@@ -124,7 +124,7 @@ by including index extension for this plugin: either add [`provider.stateful.yam
 repo to your [Para index extensions dir](https://github.com/paraterraform/para#extensions) to fix currently available versions
 or create `provider.stateful.yaml` as an empty file and put the URL to the aforementioned file inside to automatically get updates:
 ```yaml
-https://raw.githubusercontent.com/ashald/terraform-provider-stateful/master/go.mod
+https://raw.githubusercontent.com/ashald/terraform-provider-stateful/master/provider.stateful.yaml
 ```
 
 ### Manual
