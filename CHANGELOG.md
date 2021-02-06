@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.2 - 2021-02-06
+
+### Added
+
+- Release for `linux/arm64`
+
 ## 1.1 - 2019-05-27
 
 ### Added
